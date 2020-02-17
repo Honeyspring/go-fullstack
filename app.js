@@ -3,10 +3,11 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const app = express();
-const Thing = require('./models/thing'); //connect database schema
+const Thing = require('./models/thing'); //connect table schema
+
 
 //connect databe mongoose to server
-mongoose.connect('mongodb+srv://honeyspring:greenland@cluster0-xoilo.mongodb.net/test?retryWrites=true&w=majority')
+mongoose.connect('mongodb+srv://honeyspring:2772e75nl61a6Ed@cluster0-xoilo.mongodb.net/test?retryWrites=true&w=majority')
   .then(() => {
     console.log('Successfully connected to MongoDB Atlas!');
   })
@@ -22,36 +23,102 @@ app.use((req, res, next) => {
   next();
 });
 app.use(bodyParser.json());//to extract the JSON object from the request
-app.use('/api/stuff', (req, res, next) => {
-  const stuff = [
-    {
-      _id: 'oeihfzeoi',
-      title: 'My first thing',
-      description: 'All of the info about my first thing',
-      imageUrl: '',
-      price: 4900,
-      userId: 'qsomihvqios',
-    },
-    {
-      _id: 'oeihfzeomoihi',
-      title: 'My second thing',
-      description: 'All of the info about my second thing',
-      imageUrl: '',
-      price: 2900,
-      userId: 'qsomihvqios',
-    },
-  ];
-  res.status(200).json(stuff);
-});
-
 
 app.post('/api/stuff', (req, res, next) => {
-  console.log(req.body);
-  res.status(201).json({
-    message: 'Thing created successfully!'
+//created a new instance of your  Thing  model, passing it a JavaScript object containing all of the information it needs from the parsed request body
+  const thing = new Thing({
+    title: req.body.title,
+    description: req.body.description,
+    imageUrl: req.body.imageUrl,
+    price: req.body.price,
+    userId: req.body.userId
   });
+  //save()method returns a promise, so in our  then()  block, we send back a success response, and in our  catch()  block, 
+  //we send back an error response with the error thrown by Mongoose.
+  thing.save().then(
+    () => {
+      res.status(201).json({
+        message: 'Post saved successfully!'
+      });
+    }
+  ).catch(
+    (error) => {
+      res.status(400).json({
+        error: error
+      });
+    }
+  );
+
 });
 
-
-
+//GET route to return all of the Things in the database
+app.use('/api/stuff', (req, res, next) => {
+  Thing.find().then(
+    (things) => {
+      res.status(200).json(things);
+    }
+  ).catch(
+    (error) => {
+      res.status(400).json({
+        error: error
+      });
+    }
+  );
+});
+//get details of individual thing through id
+app.get('/api/stuff/:id', (req, res, next) => {
+  Thing.findOne({
+    _id: req.params.id
+  }).then(
+    (thing) => {
+      res.status(200).json(thing);
+    }
+  ).catch(
+    (error) => {
+      res.status(404).json({
+        error: error
+      });
+    }
+  );
+});
+//update data of products
+app.put('/api/stuff/:id', (req, res, next) => {
+  const thing = new Thing({
+    _id: req.params.id,
+    title: req.body.title,
+    description: req.body.description,
+    imageUrl: req.body.imageUrl,
+    price: req.body.price,
+    userId: req.body.userId
+  });
+  Thing.updateOne({_id: req.params.id}, thing).then(
+    () => {
+      res.status(201).json({
+        message: 'Thing updated successfully!'
+      });
+    }
+  ).catch(
+    (error) => {
+      res.status(400).json({
+        error: error
+      });
+    }
+  );
+});
+//delete route
+app.delete('/api/stuff/:id', (req, res, next) => {
+  Thing.deleteOne({_id: req.params.id}).then(
+    () => {
+      res.status(200).json({
+        message: 'Deleted!'
+      });
+    }
+  ).catch(
+    (error) => {
+      res.status(400).json({
+        error: error
+      });
+    }
+  );
+});
 module.exports = app;
