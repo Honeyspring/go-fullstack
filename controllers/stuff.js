@@ -1,12 +1,20 @@
 const Thing = require('../models/thing'); //connect table schema
-
+/*to add a file to the request, the front end needed to send the request data as form-data as opposed to JSON — 
+the request body contains a  thing  string, 
+which is simply a stringified  thing  object — 
+we therefore need to parse it using  JSON.parse()  to get a usable object*/
+/*we also need to resolve the full URL for our image, as  req.file.filename  only contains the filename segment — 
+we use  req.protocol  to get the first segment ( 'http' , in this case); we add the  '://' , and then use  req.get('host')  to resolve the 
+server host ('localhost:3000'  in this case); we finally add  '/images/'  and the filename to complete our URL*/
 exports.createThing = (req, res, next) => {
+  req.body.thing = JSON.parse(req.body.thing);
+  const url = req.protocol + '://' + req.get('host');
   const thing = new Thing({
-    title: req.body.title,
-    description: req.body.description,
-    imageUrl: req.body.imageUrl,
-    price: req.body.price,
-    userId: req.body.userId
+    title: req.body.thing.title,
+    description: req.body.thing.description,
+    imageUrl: url + '/images/' + req.file.filename,
+    price: req.body.thing.price,
+    userId: req.body.thing.userId
   });
   thing.save().then(
     () => {
