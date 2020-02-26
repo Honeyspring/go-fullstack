@@ -1,4 +1,5 @@
 const Thing = require('../models/thing'); //connect table schema
+const fs = require('fs');
 /*to add a file to the request, the front end needed to send the request data as form-data as opposed to JSON — 
 the request body contains a  thing  string, 
 which is simply a stringified  thing  object — 
@@ -91,17 +92,53 @@ exports.modifyThing = (req, res, next) => {
     }
   );
 };
+/*we use the ID we receive as a parameter to access the corresponding  Thing  in the database;
+
+we use the fact that we know there is an  /images/  segment in our image URL to separate out the file name;
+
+we then use the  fs  package's  unlink  function to delete that file, passing it the file to be deleted and the callback to be executed once that file has been deleted;
+
+in the callback, we implement the original logic, deleting the  Thing  from the database.*/
 exports.deleteThing = (req, res, next) => {
-  Thing.deleteOne({_id: req.params.id}).then(
-    () => {
-      res.status(200).json({
-        message: 'Deleted!'
+  Thing.findOne({_id: req.params.id}).then(
+    (thing) => {
+      const filename = thing.imageUrl.split('/images/')[1];
+      fs.unlink('images/' + filename, () => {
+        Thing.deleteOne({_id: req.params.id}).then(
+          () => {
+            res.status(200).json({
+              message: 'Deleted!'
+            });
+          }
+        ).catch(
+          (error) => {
+            res.status(400).json({
+              error: error
+            });
+          }
+        );
       });
     }
-  ).catch(
-    (error) => {
-      res.status(400).json({
-        error: error
+  );
+};
+exports.deleteThing = (req, res, next) => {
+  Thing.findOne({_id: req.params.id}).then(
+    (thing) => {
+      const filename = thing.imageUrl.split('/images/')[1];
+      fs.unlink('images/' + filename, () => {
+        Thing.deleteOne({_id: req.params.id}).then(
+          () => {
+            res.status(200).json({
+              message: 'Deleted!'
+            });
+          }
+        ).catch(
+          (error) => {
+            res.status(400).json({
+              error: error
+            });
+          }
+        );
       });
     }
   );
