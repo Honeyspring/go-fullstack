@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const app = express();
-
+const path = require('path');
 
 
 //connect databe mongoose to server
@@ -26,6 +26,9 @@ app.use(bodyParser.json());//to extract the JSON object from the request
 
 const stuffRoutes = require('./routes/stuff'); //import route
 const userRoutes = require('./routes/user');
+/*This tells Express to serve up the static resource  images  
+(a sub-directory of our base directory,  __dirname ) whenever it receives a request to the  /images  endpoint.*/
+app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/api/stuff', stuffRoutes); //register  route
 app.use('/api/auth', userRoutes);
 module.exports = app;
