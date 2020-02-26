@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
-const user = require('../models/user');
+const User = require('../models/user');
+const jwt = require('jsonwebtoken'); //to create and verify authentication tokens,
 exports.signup = (req, res, next) => {
   bcrypt.hash(req.body.password, 10).then(
     (hash) => {
@@ -39,9 +40,13 @@ exports.login = (req, res, next) => {
               error: new Error('Incorrect password!')
             });
           }
+          const token = jwt.sign(
+            { userId: user._id },
+            'RANDOM_TOKEN_SECRET',
+            { expiresIn: '24h' });
           res.status(200).json({
             userId: user._id,
-            token: 'token'
+            token: token
           });
         }
       ).catch(

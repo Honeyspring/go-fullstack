@@ -27,5 +27,5 @@ app.use(bodyParser.json());//to extract the JSON object from the request
 const stuffRoutes = require('./routes/stuff'); //import route
 const userRoutes = require('./routes/user');
 app.use('/api/stuff', stuffRoutes); //register  route
-app.use('/api/user', userRoutes);
+app.use('/api/auth', userRoutes);
 module.exports = app;
